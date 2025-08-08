@@ -1,0 +1,53 @@
+# docker-compose.yml (优化结构版)
+
+version: '3.8'
+
+services:
+  # 后端服务
+  backend:
+    build:
+      context: .
+      # 指定 Dockerfile 在 docker/ 文件夹内
+      dockerfile: ./docker/backend.Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./.env
+    container_name: financial_agent_backend
+    depends_on:
+      mcp_service:
+        condition: service_healthy
+    networks:
+      - financial-net
+
+  # 前端服务
+  frontend:
+    build:
+      context: .
+      # 指定 Dockerfile 在 docker/ 文件夹内
+      dockerfile: ./docker/frontend.Dockerfile
+    ports:
+      - "5173:80"
+    container_name: financial_agent_frontend
+    depends_on:
+      - backend
+    networks:
+      - financial-net
+
+  mcp_service:
+    build:
+      context: .
+      dockerfile: ./docker/mcp.Dockerfile
+    container_name: financial_agent_mcp_service
+    networks:
+      - financial-net
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:7816/sse" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+networks:
+  financial-net:
+    driver: bridge

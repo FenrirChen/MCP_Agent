@@ -1,0 +1,28 @@
+# .dockerignore
+
+# Python virtual environment
+.venv
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE and OS files
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+
+# Git folder
+.git
+
+# Frontend dependencies (will be installed inside the container)
+frontend-Vue3/vue-project/node_modules
+
+# Frontend build artifacts (if any)
+frontend-Vue3/vue-project/dist
+
+README.md
