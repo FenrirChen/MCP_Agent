@@ -19,6 +19,15 @@ class FinancialTools(Toolkit):
         super().__init__(name="financial_tools",
                          tools=[self.list_financial_apis, self.get_financial_api_detail, self.call_financial_api])
 
+        try:
+            # 路径是相对于您项目根目录的
+            with open('tools/mock_data.json', 'r', encoding='utf-8') as f:
+                self.mock_data = json.load(f)
+            print("[FinancialTools] 成功加载 MOCK DATA 文件。")
+        except Exception as e:
+            print(f"[FinancialTools] 警告：加载或解析 mock_data.json 失败: {e}")
+            self.mock_data = {}  # 如果文件不存在或格式错误，创建一个空字典以防程序崩溃
+
         # 客户端将连接这个地址
         self.server_url = "http://mcp_service:7816/sse"
         print("[FinancialTools] 客户端已配置，将连接到", self.server_url)
@@ -88,95 +97,41 @@ class FinancialTools(Toolkit):
         return json.dumps({"error": f"在api_def.json中未找到服务 '{service_name}' 的定义。"}, ensure_ascii=False)
 
     async def call_financial_api(self, service: str, request: Dict[str, Any] = {}) -> str:
-        print(f"--- [Official Client] 准备调用工具: {service} with params: {request} ---")
+        print(f"--- [MOCK-ENGINE] 准备在 mock_data.json 中查找服务: {service} ---")
 
-        # --- 初始化分页循环所需的变量 ---
-        result_list_key = self._find_result_list_key(service)
-        # 如果找不到列表键，说明是操作型或简单的查询API，进入“简单调用”模式
-        if not result_list_key:
-            print(f"--- [Official Client] 未找到响应列表键，进入【简单调用】模式处理服务: {service} ---")
-            try:
-                # 准备请求体，操作型API通常也需要body
-                full_payload = {
-                    "serialNo": str(uuid.uuid4()),
-                    "clientIp": "127.0.0.1",
-                    "body": request.get('body', request)
-                }
+        # 检查此服务是否有任何模拟场景定义
+        if service in self.mock_data:
+            mock_scenarios = self.mock_data[service]
+            agent_params = request.get('body', {})
 
-                async with Client(self.server_url) as client:
-                    result = await client.call_tool(service, {"request_data": full_payload})
-                    # 直接返回后端服务的真实响应
-                    print(f"--- [Official Client] 已收到【简单调用】的响应 ---")
-                    return json.dumps(result.data, ensure_ascii=False, indent=2)
+            # 遍历该服务的所有模拟场景
+            for scenario in mock_scenarios:
+                match_params = scenario.get("match_params", {})
 
-            except Exception as e:
-                import traceback
-                return json.dumps({"error": f"执行简单调用时出错: {e}\n{traceback.format_exc()}"},
-                                  ensure_ascii=False)
+                # 处理默认/通配场景
+                if match_params == "default":
+                    print(f"--- [MOCK] 匹配到 '{service}' 的默认场景 ---")
+                    return json.dumps(scenario["response"], ensure_ascii=False, indent=2)
 
-        else:  # 否则，说明是查询类API，进入“分页调用”模式
-            print(f"--- [Official Client] 已动态识别结果列表键名为: '{result_list_key}'，进入【分页调用】模式 ---")
-            ai_business_params = request.get('body', request).copy()
-            current_page = 1
-            total_pages = 1
-            all_results = []
+                # 处理具体的参数匹配场景
+                is_match = True
+                # 遍历此场景需要匹配的所有条件
+                for key, expected_value in match_params.items():
+                    # 如果Agent传入的参数中，有任何一个key的值不匹配，则判定为不匹配
+                    if agent_params.get(key) != expected_value:
+                        is_match = False
+                        break  # 中断对当前场景的检查，继续检查下一个场景
 
-            print("--- [Official Client] 已启动自动分页数据获取模式 ---")
+                # 如果所有条件都匹配成功
+                if is_match:
+                    print(f"--- [MOCK] 成功匹配到 '{service}' 的一个具体场景 ---")
+                    return json.dumps(scenario["response"], ensure_ascii=False, indent=2)
 
-            while current_page <= total_pages:
-                try:
-                    body_payload = {"pageNo": str(current_page), "pageSize": "20"}
-                    body_payload.update(ai_business_params)
-                    full_payload = {"serialNo": str(uuid.uuid4()), "clientIp": "127.0.0.1", "body": body_payload}
-
-                    print(f"--- [Official Client] 正在获取第 {current_page}/{total_pages} 页数据... ---")
-
-                    async with Client(self.server_url) as client:
-                        result = await client.call_tool(service, {"request_data": full_payload})
-                        response_data = result.data
-
-                    if not response_data or response_data.get('rspCode') != '000000':
-                        return json.dumps(response_data or {"error": "后端返回了空响应"}, ensure_ascii=False, indent=2)
-
-                    response_body = response_data.get('body', {})
-                    # 使用动态获取的键名来提取数据
-                    page_data = response_body.get(result_list_key)  # 首先尝试API定义中的原始键名
-
-                    # 如果用原始键名没取到数据，但total>0，则尝试驼峰式(首字母小写)的键名
-                    if not page_data and int(response_body.get('total', 0)) > 0:
-                        camel_case_key = result_list_key[0].lower() + result_list_key[1:]
-                        if camel_case_key != result_list_key:  # 避免重复尝试
-                            print(
-                                f"--- [Official Client] 警告: 未在 '{result_list_key}' 找到数据，尝试驼峰式键名 '{camel_case_key}'... ---")
-                            page_data = response_body.get(camel_case_key, [])
-
-                    page_data = page_data or []  # 确保page_data不是None
-                    if page_data:
-                        all_results.extend(page_data)
-
-                    if current_page == 1:
-                        total_records = int(response_body.get('total', 0))
-                        page_size = int(response_body.get('pageSize', 20))
-                        total_pages = math.ceil(total_records / page_size) if page_size > 0 else 1
-                        if total_pages == 0: total_pages = 1
-                        print(f"--- [Official Client] 检测到总记录数: {total_records}, 共 {total_pages} 页. ---")
-
-                    current_page += 1
-
-                except Exception as e:
-                    import traceback
-                    return json.dumps({"error": f"在获取第 {current_page} 页数据时出错: {e}\n{traceback.format_exc()}"},
-                                      ensure_ascii=False)
-
-            print(f"--- [Official Client] 所有 {total_pages} 页数据获取完毕，共聚合 {len(all_results)} 条记录。---")
-
-            final_success_response = {
-                "rspCode": "000000",
-                "rspMsg": "查询成功（已合并所有分页数据）",
-                "body": {
-                    result_list_key: all_results,  # 【核心修改】在最终结果里也使用动态的键名
-                    "total": len(all_results),
-                    "totalPages": total_pages
-                }
-            }
-            return json.dumps(final_success_response, ensure_ascii=False, indent=2)
+        # 如果遍历完所有场景都没有找到匹配项，返回“查询无结果”
+        print(f"--- [MOCK] 未在 mock_data.json 中找到 '{service}' 合适的模拟场景 ---")
+        not_found_response = {
+            "rspCode": "000000",
+            "rspMsg": "查询成功【MOCK DATA - No Scene Found】",
+            "body": {"detailList": [], "total": 0, "totalPages": 0}
+        }
+        return json.dumps(not_found_response, ensure_ascii=False, indent=2)

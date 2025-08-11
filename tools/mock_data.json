@@ -1,0 +1,125 @@
+{
+  "RecordSettlementAmountService": [
+    {
+      "match_params": {
+        "settlementList": [
+          {
+            "projectName": "公司车辆管理系统2022-2024年软件许可采购项目"
+          }
+        ]
+      },
+      "response": {
+        "rspCode": "000000",
+        "rspMsg": "查询成功【MOCK DATA】",
+        "body": {
+          "settlementList": [
+            {
+              "projectId": "PJ2022-007",
+              "projectName": "公司车辆管理系统2022-2024年软件许可采购项目",
+              "contractId": "CON-2022-123",
+              "supplierName": "某软件公司",
+              "totalAmount": 500000.0,
+              "currency": "CNY",
+              "status": "已结算"
+            }
+          ],
+          "total": 1,
+          "totalPages": 1
+        }
+      }
+    }
+  ],
+  "FinishSalesInvoiceService": [
+    {
+      "match_params": {
+        "projectId": "PJ2022-007"
+      },
+      "response": {
+        "rspCode": "000000",
+        "rspMsg": "查询成功【MOCK DATA】",
+        "body": {
+          "salesInvoiceLedgerList": [
+            {
+              "invoiceId": "INV-S-001",
+              "invoiceDate": "2025-08-05",
+              "amount": 50000.0,
+              "taxRate": 0.06,
+              "totalAmount": 53000.0,
+              "customerName": "客户A",
+              "status": "已开票"
+            },
+            {
+              "invoiceId": "INV-S-002",
+              "invoiceDate": "2025-07-20",
+              "amount": 100000.0,
+              "taxRate": 0.06,
+              "totalAmount": 106000.0,
+              "customerName": "客户B",
+              "status": "已开票"
+            }
+          ],
+          "total": 2,
+          "totalPages": 1
+        }
+      }
+    }
+  ],
+  "RecordBankFlowService": [
+    {
+      "match_params": {
+        "projectId": "PJ2022-007"
+      },
+      "response": {
+        "rspCode": "000000",
+        "rspMsg": "查询成功【MOCK DATA】",
+        "body": {
+          "bankFlowList": [
+            {
+              "flowId": "FLOW-001",
+              "transactionDate": "2025-08-02",
+              "amount": -15000.0,
+              "payee": "某硬件供应商",
+              "bankName": "中国工商银行",
+              "notes": "采购服务器"
+            },
+            {
+              "flowId": "FLOW-002",
+              "transactionDate": "2025-06-15",
+              "amount": -30000.0,
+              "payee": "某服务供应商",
+              "bankName": "中国建设银行",
+              "notes": "咨询服务费"
+            }
+          ],
+          "total": 2,
+          "totalPages": 1
+        }
+      }
+    }
+  ],
+  "FinishCommunicationReimbDetailService": [
+    {
+      "match_params": {
+        "projectId": "PJ2022-007"
+      },
+      "response": {
+        "rspCode": "000000",
+        "rspMsg": "查询成功【MOCK DATA】",
+        "body": {
+          "communicationDetailInfoList": [
+            {
+              "reimbId": "REIMB-001",
+              "submissionDate": "2025-08-06",
+              "employeeName": "张三",
+              "amount": -88.5,
+              "reimbursementType": "通讯费",
+              "approvalStatus": "已批准"
+            }
+          ],
+          "total": 1,
+          "totalPages": 1
+        }
+      }
+    }
+  ]
+}
