@@ -7,7 +7,9 @@ from pydantic import BaseModel
 from typing import List,Optional
 
 from agent import FinancialAgent
+from typing import List, Optional, Any, Union
 
+from schemas import VisualChatResponse
 
 
 # --- FastAPI 应用设置 ---
@@ -57,17 +59,9 @@ class ChatRequest(BaseModel):
 class ChatRequest(BaseModel):
     message: str
 
-class RichExecutionStep(BaseModel):
-    type: str
-    content: Optional[str] = None
-    tool_name: Optional[str] = None
-    tool_args: Optional[str] = None
-    output_preview: Optional[str] = None
-    output_full: Optional[str] = None
 
-class VisualChatResponse(BaseModel):
-    final_answer: str
-    execution_steps: List[RichExecutionStep]
+
+
 
 # --- API 端点定义 ---
 

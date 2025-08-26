@@ -102,7 +102,7 @@ class FinancialTools(Toolkit):
         # 检查此服务是否有任何模拟场景定义
         if service in self.mock_data:
             mock_scenarios = self.mock_data[service]
-            agent_params = request.get('body', {})
+            agent_params = request
 
             # 遍历该服务的所有模拟场景
             for scenario in mock_scenarios:
@@ -135,3 +135,4 @@ class FinancialTools(Toolkit):
             "body": {"detailList": [], "total": 0, "totalPages": 0}
         }
         return json.dumps(not_found_response, ensure_ascii=False, indent=2)
+

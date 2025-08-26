@@ -68,7 +68,7 @@ for service_key, service_info in api_definitions.items():
         return service_function
 
 
-    tool_name = service_name[0].lower() + service_name[1:]
+    tool_name = service_name
     func = make_service_function()
     app.tool(tool_name)(func)
 

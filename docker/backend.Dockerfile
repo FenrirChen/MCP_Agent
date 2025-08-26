@@ -16,6 +16,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY ../agent.py .
 COPY ../server.py .
 COPY ../api_def.json .
+COPY ../schemas.py .
 COPY ../mcp_service.py .
 COPY ../tools ./tools/
 

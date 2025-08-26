@@ -306,38 +306,95 @@ html, body, #app {
 
 
 .report-container {
-    max-width: 850px;
-    margin: 2rem auto;
-    background-color: var(--bg-color-card);
-    border-radius: 12px;
-    box-shadow: var(--shadow);
-    overflow: hidden;
+    /* 容器不再有最大宽度和居中外边距，而是撑满整个可用空间 */
+    width: 100%;
+    min-height: 100vh; /* 确保至少占满一屏高 */
+    background-color: var(--bg-color-page); /* 使用页面背景色 */
+    padding: 2rem; /* 在容器四周留出呼吸空间 */
 }
+
 .report-header {
+    /* 报告页的总标题区域 */
     text-align: center;
-    padding: 2.5rem 2rem;
-    background-color: var(--bg-color-page);
+    max-width: 1100px; /* 内容区域的最大宽度 */
+    margin: 0 auto 2rem auto; /* 水平居中，并与下方内容拉开距离 */
 }
+
 .report-header h1 {
-    font-size: 2.25rem;
+    font-size: 2.5rem; /* 加大标题字号 */
     font-weight: 700;
     margin: 0 0 0.5rem 0;
 }
+
 .report-header p {
     color: var(--text-color-light);
     font-size: 1rem;
     margin: 0;
 }
-.report-body { padding: 2.5rem; }
-.report-section { margin-bottom: 2.5rem; }
-.report-section h3 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    margin: 0 0 1.5rem 0;
-    padding-bottom: 0.75rem;
-    border-bottom: 2px solid var(--primary-color);
+
+.report-body {
+    /* 这是包含所有表格的主体内容区，我们把它做成一个大卡片 */
+    max-width: 1100px; /* 设定一个更宽敞的最大宽度 */
+    margin: 0 auto; /* 水平居中 */
+    background-color: var(--bg-color-card); /* 使用白色卡片背景 */
+    border-radius: 12px; /* 保留圆角 */
+    box-shadow: var(--shadow); /* 保留阴影，增加立体感 */
+    padding: 2rem 2.5rem; /* 加大内部的边距 */
 }
+
+.report-section {
+    margin-bottom: 3rem; /* 加大每个版块之间的垂直距离 */
+}
+
+.report-section:last-child {
+    margin-bottom: 0; /* 最后一个版块不需要底部距离 */
+}
+
+.report-section h3 {
+    /* 区域标题采用左侧饰条的样式，更现代 */
+    font-size: 1.75rem; /* 加大区域标题字号 */
+    font-weight: 700;
+    color: var(--text-color-dark); /* 标题颜色加深 */
+    margin: 0 0 1.5rem 0;
+    padding-left: 1.25rem; /* 左侧留出空间给饰条 */
+    border-left: 5px solid var(--primary-color); /* 左侧的主题色饰条 */
+    border-bottom: none; /* 移除之前的下划线 */
+}
+
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.report-table th,
+.report-table td {
+    border: 1px solid var(--border-color);
+    padding: 12px 15px;
+    text-align: left;
+    line-height: 1.5;
+}
+
+.report-table th {
+    background-color: #f8f9fa; /* 给表头一个更淡的背景色 */
+    font-weight: 500;
+    color: var(--text-color-dark);
+}
+
+.report-table tbody tr:nth-child(odd) {
+    background-color: #fdfdfd;
+}
+
+.report-footer {
+    text-align: center;
+    padding: 2.5rem 0 1rem 0; /* 加大与上方内容的距离 */
+    font-size: 0.9rem;
+    color: var(--text-color-light);
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+
 .data-grid {
     display: grid;
     grid-template-columns: 200px 1fr;
@@ -351,12 +408,12 @@ html, body, #app {
     border-right: 1px solid var(--border-color);
 }
 .data-value { font-weight: 500; word-break: break-all; }
-.report-footer {
-    text-align: center;
-    padding: 1.5rem;
-    background-color: var(--bg-color-page);
-    font-size: 0.8rem;
-    color: var(--text-color-light);
+
+.chart-container {
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: #fdfdfd; /* 给图表一个淡淡的背景，与表格的斑马条纹呼应 */
 }
 
 @media (max-width: 600px) {

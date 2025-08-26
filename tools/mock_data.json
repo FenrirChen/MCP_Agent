@@ -1,38 +1,252 @@
 {
-  "RecordSettlementAmountService": [
+  "RecordProjectService": [
     {
       "match_params": {
-        "settlementList": [
-          {
-            "projectName": "公司车辆管理系统2022-2024年软件许可采购项目"
-          }
-        ]
+        "isQuery": true,
+        "body": {
+          "projectName": "公司车辆管理系统2022-2024年软件许可采购项目"
+        }
       },
       "response": {
         "rspCode": "000000",
-        "rspMsg": "查询成功【MOCK DATA】",
+        "rspMsg": "查询成功【MOCK DATA for RecordProjectService】",
         "body": {
-          "settlementList": [
+          "projectList": [
             {
               "projectId": "PJ2022-007",
               "projectName": "公司车辆管理系统2022-2024年软件许可采购项目",
-              "contractId": "CON-2022-123",
-              "supplierName": "某软件公司",
-              "totalAmount": 500000.0,
-              "currency": "CNY",
-              "status": "已结算"
+              "projectCode": "PROJ-VM-01",
+              "projectStatus": "在建",
+              "projectLeader": "张三"
             }
           ],
           "total": 1,
           "totalPages": 1
         }
       }
-    }
-  ],
-  "FinishSalesInvoiceService": [
+    },
     {
       "match_params": {
-        "projectId": "PJ2022-007"
+        "isQuery": true
+      },
+      "response": {
+        "rspCode": "000000",
+        "rspMsg": "查询成功【MOCK DATA for RecordProjectService - All Projects】",
+        "body": {
+          "projectList": [
+            {
+              "projectId": "PJ2023-001",
+              "projectName": "财务部Q3季度数字化转型咨询项目",
+              "projectCode": "PROJ-FIN-01",
+              "projectStatus": "已完成",
+              "projectLeader": "李四"
+            },
+            {
+              "projectId": "PJ2023-002",
+              "projectName": "市场部“飞龙计划”营销活动项目",
+              "projectCode": "PROJ-MKT-03",
+              "projectStatus": "在建",
+              "projectLeader": "王五"
+            },
+            {
+              "projectId": "PJ2023-003",
+              "projectName": "人力资源管理系统升级项目",
+              "projectCode": "PROJ-HR-02",
+              "projectStatus": "在建",
+              "projectLeader": "李四"
+            },
+            {
+              "projectId": "PJ2024-004",
+              "projectName": "华南大区办公室网络改造项目",
+              "projectCode": "PROJ-IT-11",
+              "projectStatus": "已完成",
+              "projectLeader": "赵六"
+            },
+            {
+              "projectId": "PJ2024-005",
+              "projectName": "新能源电池研发（一期）项目",
+              "projectCode": "PROJ-RD-08",
+              "projectStatus": "在建",
+              "projectLeader": "孙七"
+            },
+            {
+              "projectId": "PJ2024-006",
+              "projectName": "企业级数据湖平台建设项目",
+              "projectCode": "PROJ-DATA-01",
+              "projectStatus": "在建",
+              "projectLeader": "王五"
+            },
+            {
+              "projectId": "PJ2022-015",
+              "projectName": "供应链物流可视化平台项目",
+              "projectCode": "PROJ-SCM-05",
+              "projectStatus": "已完成",
+              "projectLeader": "赵六"
+            },
+            {
+              "projectId": "PJ2023-008",
+              "projectName": "客户关系管理（CRM）系统采购与实施项目",
+              "projectCode": "PROJ-CRM-01",
+              "projectStatus": "在建",
+              "projectLeader": "张三"
+            },
+            {
+              "projectId": "PJ2023-009",
+              "projectName": "2023年度校园招聘专项项目",
+              "projectCode": "PROJ-HR-04",
+              "projectStatus": "已完成",
+              "projectLeader": "李四"
+            },
+            {
+              "projectId": "PJ2024-010",
+              "projectName": "AIGC内容创作平台内部试点项目",
+              "projectCode": "PROJ-AIGC-01",
+              "projectStatus": "在建",
+              "projectLeader": "孙七"
+            },
+            {
+              "projectId": "PJ2022-018",
+              "projectName": "ISO27001信息安全认证项目",
+              "projectCode": "PROJ-SEC-02",
+              "projectStatus": "已暂停",
+              "projectLeader": "王五"
+            },
+            {
+              "projectId": "PJ2024-011",
+              "projectName": "华东区新生产线建设项目",
+              "projectCode": "PROJ-MFG-03",
+              "projectStatus": "在建",
+              "projectLeader": "赵六"
+            }
+          ],
+          "total": 13,
+          "totalPages": 2
+        }
+      }
+    }
+
+  ],
+
+  "QueryBookService": [
+    {
+      "match_params": { "isQuery": true, "body": { "projectId": "PJ2022-007" }},
+      "response": { "rspCode": "000000", "rspMsg": "查询成功", "body": { "projectId": "PJ2022-007", "projectName": "公司车辆管理系统2022-2024年软件许可采购项目", "annualRevenue": 1800000.00, "annualCost": 1200000.00 }}
+    },
+    {
+      "match_params": { "isQuery": true, "body": { "projectName": "公司车辆管理系统2022-2024年软件许可采购项目" }},
+      "response": { "rspCode": "000000", "rspMsg": "查询成功", "body": { "projectId": "PJ2022-007", "projectName": "公司车辆管理系统2022-2024年软件许可采购项目", "annualRevenue": 1800000.00, "annualCost": 1200000.00 }}
+    },
+    {
+      "match_params": { "isQuery": true, "body": { "projectId": "PJ2023-001" }},
+      "response": { "rspCode": "000000", "rspMsg": "查询成功", "body": { "projectId": "PJ2023-001", "projectName": "财务部Q3季度数字化转型咨询项目", "annualRevenue": 1250000.00, "annualCost": 880000.00 }}
+    },
+    {
+      "match_params": { "isQuery": true, "body": { "projectName": "财务部Q3季度数字化转型咨询项目" }},
+      "response": { "rspCode": "000000", "rspMsg": "查询成功", "body": { "projectId": "PJ2023-001", "projectName": "财务部Q3季度数字化转型咨询项目", "annualRevenue": 1250000.00, "annualCost": 880000.00 }}
+    },
+    {
+      "match_params": { "isQuery": true, "body": { "projectId": "PJ2023-002" }},
+      "response": { "rspCode": "000000", "rspMsg": "查询成功", "body": { "projectId": "PJ2023-002", "projectName": "市场部“飞龙计划”营销活动项目", "annualRevenue": 2500000.00, "annualCost": 1500000.00 }}
+    },
+    {
+      "match_params": { "isQuery": true, "body": { "projectName": "市场部“飞龙计划”营销活动项目" }},
+      "response": { "rspCode": "000000", "rspMsg": "查询成功", "body": { "projectId": "PJ2023-002", "projectName": "市场部“飞龙计划”营销活动项目", "annualRevenue": 2500000.00, "annualCost": 1500000.00 }}
+    },
+    {
+      "match_params": { "isQuery": true, "body": { "projectId": "PJ2023-003" }},
+      "response": { "rspCode": "000000", "rspMsg": "查询成功", "body": { "projectId": "PJ2023-003", "projectName": "人力资源管理系统升级项目", "annualRevenue": 950000.00, "annualCost": 650000.00 }}
+    },
+    {
+      "match_params": { "isQuery": true, "body": { "projectName": "人力资源管理系统升级项目" }},
+      "response": { "rspCode": "000000", "rspMsg": "查询成功", "body": { "projectId": "PJ2023-003", "projectName": "人力资源管理系统升级项目", "annualRevenue": 950000.00, "annualCost": 650000.00 }}
+    },
+    {
+      "match_params": { "isQuery": true, "body": { "projectId": "PJ2024-004" }},
+      "response": { "rspCode": "000000", "rspMsg": "查询成功", "body": { "projectId": "PJ2024-004", "projectName": "华南大区办公室网络改造项目", "annualRevenue": 600000.00, "annualCost": 480000.00 }}
+    },
+    {
+      "match_params": { "isQuery": true, "body": { "projectName": "华南大区办公室网络改造项目" }},
+      "response": { "rspCode": "000000", "rspMsg": "查询成功", "body": { "projectId": "PJ2024-004", "projectName": "华南大区办公室网络改造项目", "annualRevenue": 600000.00, "annualCost": 480000.00 }}
+    },
+    {
+      "match_params": { "isQuery": true, "body": { "projectId": "PJ2024-005" }},
+      "response": { "rspCode": "000000", "rspMsg": "查询成功", "body": { "projectId": "PJ2024-005", "projectName": "新能源电池研发（一期）项目", "annualRevenue": 5000000.00, "annualCost": 3500000.00 }}
+    },
+    {
+      "match_params": { "isQuery": true, "body": { "projectName": "新能源电池研发（一期）项目" }},
+      "response": { "rspCode": "000000", "rspMsg": "查询成功", "body": { "projectId": "PJ2024-005", "projectName": "新能源电池研发（一期）项目", "annualRevenue": 5000000.00, "annualCost": 3500000.00 }}
+    },
+    {
+      "match_params": { "isQuery": true, "body": { "projectId": "PJ2024-006" }},
+      "response": { "rspCode": "000000", "rspMsg": "查询成功", "body": { "projectId": "PJ2024-006", "projectName": "企业级数据湖平台建设项目", "annualRevenue": 3500000.00, "annualCost": 2100000.00 }}
+    },
+    {
+      "match_params": { "isQuery": true, "body": { "projectName": "企业级数据湖平台建设项目" }},
+      "response": { "rspCode": "000000", "rspMsg": "查询成功", "body": { "projectId": "PJ2024-006", "projectName": "企业级数据湖平台建设项目", "annualRevenue": 3500000.00, "annualCost": 2100000.00 }}
+    },
+    {
+      "match_params": { "isQuery": true, "body": { "projectId": "PJ2022-015" }},
+      "response": { "rspCode": "000000", "rspMsg": "查询成功", "body": { "projectId": "PJ2022-015", "projectName": "供应链物流可视化平台项目", "annualRevenue": 2800000.00, "annualCost": 2200000.00 }}
+    },
+    {
+      "match_params": { "isQuery": true, "body": { "projectName": "供应链物流可视化平台项目" }},
+      "response": { "rspCode": "000000", "rspMsg": "查询成功", "body": { "projectId": "PJ2022-015", "projectName": "供应链物流可视化平台项目", "annualRevenue": 2800000.00, "annualCost": 2200000.00 }}
+    },
+    {
+      "match_params": { "isQuery": true, "body": { "projectId": "PJ2023-008" }},
+      "response": { "rspCode": "000000", "rspMsg": "查询成功", "body": { "projectId": "PJ2023-008", "projectName": "客户关系管理（CRM）系统采购与实施项目", "annualRevenue": 1500000.00, "annualCost": 900000.00 }}
+    },
+    {
+      "match_params": { "isQuery": true, "body": { "projectName": "客户关系管理（CRM）系统采购与实施项目" }},
+      "response": { "rspCode": "000000", "rspMsg": "查询成功", "body": { "projectId": "PJ2023-008", "projectName": "客户关系管理（CRM）系统采购与实施项目", "annualRevenue": 1500000.00, "annualCost": 900000.00 }}
+    },
+    {
+      "match_params": { "isQuery": true, "body": { "projectId": "PJ2023-009" }},
+      "response": { "rspCode": "000000", "rspMsg": "查询成功", "body": { "projectId": "PJ2023-009", "projectName": "2023年度校园招聘专项项目", "annualRevenue": 500000.00, "annualCost": 450000.00 }}
+    },
+    {
+      "match_params": { "isQuery": true, "body": { "projectName": "2023年度校园招聘专项项目" }},
+      "response": { "rspCode": "000000", "rspMsg": "查询成功", "body": { "projectId": "PJ2023-009", "projectName": "2023年度校园招聘专项项目", "annualRevenue": 500000.00, "annualCost": 450000.00 }}
+    },
+    {
+      "match_params": { "isQuery": true, "body": { "projectId": "PJ2024-010" }},
+      "response": { "rspCode": "000000", "rspMsg": "查询成功", "body": { "projectId": "PJ2024-010", "projectName": "AIGC内容创作平台内部试点项目", "annualRevenue": 800000.00, "annualCost": 300000.00 }}
+    },
+    {
+      "match_params": { "isQuery": true, "body": { "projectName": "AIGC内容创作平台内部试点项目" }},
+      "response": { "rspCode": "000000", "rspMsg": "查询成功", "body": { "projectId": "PJ2024-010", "projectName": "AIGC内容创作平台内部试点项目", "annualRevenue": 800000.00, "annualCost": 300000.00 }}
+    },
+    {
+      "match_params": { "isQuery": true, "body": { "projectId": "PJ2022-018" }},
+      "response": { "rspCode": "000000", "rspMsg": "查询成功", "body": { "projectId": "PJ2022-018", "projectName": "ISO27001信息安全认证项目", "annualRevenue": 750000.00, "annualCost": 600000.00 }}
+    },
+    {
+      "match_params": { "isQuery": true, "body": { "projectName": "ISO27001信息安全认证项目" }},
+      "response": { "rspCode": "000000", "rspMsg": "查询成功", "body": { "projectId": "PJ2022-018", "projectName": "ISO27001信息安全认证项目", "annualRevenue": 750000.00, "annualCost": 600000.00 }}
+    },
+    {
+      "match_params": { "isQuery": true, "body": { "projectId": "PJ2024-011" }},
+      "response": { "rspCode": "000000", "rspMsg": "查询成功", "body": { "projectId": "PJ2024-011", "projectName": "华东区新生产线建设项目", "annualRevenue": 8500000.00, "annualCost": 6800000.00 }}
+    },
+    {
+      "match_params": { "isQuery": true, "body": { "projectName": "华东区新生产线建设项目" }},
+      "response": { "rspCode": "000000", "rspMsg": "查询成功", "body": { "projectId": "PJ2024-011", "projectName": "华东区新生产线建设项目", "annualRevenue": 8500000.00, "annualCost": 6800000.00 }}
+    }
+  ],
+
+
+
+
+
+
+
+  "FinishRevenueService": [
+    {
+      "match_params": {
+        "isQuery": true,
+        "body": {
+          "projectId": "PJ2022-007"
+        }
       },
       "response": {
         "rspCode": "000000",
@@ -64,10 +278,13 @@
       }
     }
   ],
-  "RecordBankFlowService": [
+  "FinishPayPaymentService": [
     {
       "match_params": {
-        "projectId": "PJ2022-007"
+        "isQuery": true,
+        "body": {
+          "projectId": "PJ2022-007"
+        }
       },
       "response": {
         "rspCode": "000000",
@@ -100,7 +317,10 @@
   "FinishCommunicationReimbDetailService": [
     {
       "match_params": {
-        "projectId": "PJ2022-007"
+        "isQuery": true,
+        "body": {
+          "projectId": "PJ2022-007"
+        }
       },
       "response": {
         "rspCode": "000000",
