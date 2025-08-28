@@ -4,6 +4,7 @@ import logging
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from fastapi.responses import StreamingResponse
 from typing import List,Optional
 
 from agent import FinancialAgent
@@ -96,6 +97,40 @@ async def handle_chat(request: ChatRequest):
         logger.error(f"处理任务 '{last_user_message}' 时发生错误: {e}", exc_info=True)
         # 将详细错误信息返回给前端，方便调试
         raise HTTPException(status_code=500, detail=f"AI助手在处理请求时遇到内部错误: {e}")
+
+
+@app.post("/chat/stream")
+async def handle_chat_stream(request: ChatRequest):
+    """
+    处理来自前端的聊天请求，并以流式响应 (NDJSON) 返回 Agent 的执行过程。
+    """
+    # 步骤 1: 复用和原有端点一样的安全检查
+    if not agent:
+        logger.error("请求被拒绝，因为 Agent 未能成功初始化。")
+        # 对于流式端点，如果还没开始流就出错了，可以直接抛出 HTTPException
+        raise HTTPException(status_code=503, detail="服务暂时不可用：AI助手初始化失败。")
+
+    user_message = request.message
+    if not user_message:
+        logger.warning("收到的请求中没有找到有效的用户消息。")
+        raise HTTPException(status_code=400, detail="请求数据中未包含用户消息。")
+
+    logger.info(f"接收到流式任务: \"{user_message}\"")
+
+    # 步骤 2: 核心改动 - 调用流式方法并返回 StreamingResponse
+    try:
+        # 注意这里：我们调用的是 get_response_stream 方法
+        # 这个调用会返回一个异步生成器对象，我们直接把它传递给 StreamingResponse
+        # 不需要在这里使用 await agent.get_response_stream(...)
+        agent_generator = agent.get_response_stream(user_message)
+
+        return StreamingResponse(agent_generator, media_type="application/x-ndjson")
+
+    except Exception as e:
+        # 这个 try/except 主要捕获在开始流之前的、预料之外的错误
+        # 流过程中的错误已经在 get_response_stream 内部被捕获并 yield 出去了
+        logger.error(f"在准备流式响应时发生错误: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"AI助手在准备流时遇到内部错误: {e}")
 
 
 @app.get("/")

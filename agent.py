@@ -3,6 +3,9 @@ from dotenv import load_dotenv  # 用于加载.env文件
 import json
 from datetime import datetime
 import re
+from typing import AsyncGenerator
+import logging
+import time
 
 # 确保在导入agno模块之前加载环境变量
 load_dotenv()
@@ -13,6 +16,7 @@ from agno.models.message import Message
 from agno.models.deepseek import DeepSeek
 from agno.run.response import RunResponse
 from tools.mcp_tool import FinancialTools
+
 
 
 class FinancialAgent:
@@ -325,7 +329,7 @@ class FinancialAgent:
             print(f"ERROR: 知识初始化失败: {e}")
             self.api_list_cache = "错误：无法加载API列表。"
 
-    async def get_response(self, user_input: str) -> dict:
+    async def get_response_stream(self, user_input: str) -> AsyncGenerator[str, None]:
         # --- Part 1: 准备并调用 Agent (循环执行) ---
         if not self.is_knowledge_initialized:
             await self._initialize_knowledge()
@@ -345,128 +349,111 @@ class FinancialAgent:
         current_user_message = Message(role="user", content=user_input)
         messages_for_loop = history_messages + [current_user_message]
 
-        # 用于记录本次用户请求的所有“思考->行动->结果”轨迹
-        full_trace_of_this_turn = []
-        final_answer = "Agent 未能得出最终结论。"
-        max_turns = 10
+        try:
+            response_iterator = await self.coreagent.arun(
+                messages=messages_for_loop,
+                stream=True,
+                stream_intermediate_steps=True
+            )
 
-        for i in range(max_turns):
-            print(f"\n--- Agent Execution Loop: Turn {i + 1}/{max_turns} ---")
+            in_final_answer_stream = False
 
-            response_object: RunResponse = await self.coreagent.arun(messages=messages_for_loop)
-            # arun 返回的结果包含了完整的对话历史，我们需要从中提取出“新”产生的部分，
-            # 即本次 LLM 返回的“思考”或“行动”或“最终答案”。
-            newly_generated_messages = response_object.messages[len(messages_for_loop):]
+            async for chunk in response_iterator:
+                event_type = chunk.event
 
-            if not newly_generated_messages:
-                print("WARN: Agent did not produce any new messages. Breaking loop.")
-                final_answer = "Agent 停止响应，任务中断。"
-                break
+                if event_type == "RunResponseContent":
+                    content_piece = chunk.content
+                    if "<FINAL_ANSWER_START>" in content_piece:
+                        in_final_answer_stream = True
+                        content_piece = content_piece.split("<FINAL_ANSWER_START>", 1)[-1]
+                    if content_piece and not in_final_answer_stream:
+                        yield json.dumps({"type": "thought_chunk", "data": {"content": content_piece}}) + "\n"
 
-            # 将新产生的消息，同时添加到两个列表中：
-            # 1. full_trace_of_this_turn: 用于最终展示给用户的执行步骤。
-            full_trace_of_this_turn.extend(newly_generated_messages)
-            # 2. messages_for_loop: 用于下一次循环的输入，这样 LLM 就能看到自己上一步的思考和行动。
-            messages_for_loop.extend(newly_generated_messages)
+                elif event_type == "ToolCallStarted":
+                    tool_execution = chunk.tool
+                    yield json.dumps({
+                        "type": "tool_call",
+                        "data": {
+                            "tool_name": tool_execution.tool_name,
+                            "tool_args": json.dumps(tool_execution.tool_args, ensure_ascii=False, indent=2)
+                        }
+                    }) + "\n"
 
-            last_message = newly_generated_messages[-1]
-            if last_message.role == 'assistant':
-                content = last_message.content
+                elif event_type == "ToolCallCompleted":
+                    tool_execution = chunk.tool
+                    # ***** 修正问题2: 将 output_content 重命名为 output_full *****
+                    yield json.dumps({
+                        "type": "tool_output",
+                        "data": {
+                            "tool_name": tool_execution.tool_name,
+                            "output_full": str(tool_execution.result),  # <-- 这里
+                            "output_preview": (str(tool_execution.result)[:500] + '...') if len(
+                                str(tool_execution.result)) > 500 else str(tool_execution.result)
+                        }
+                    }) + "\n"
 
-                # 检查是否进入 FINAL 阶段
-                if "<FINAL_ANSWER_START>" in content and "<FINAL_ANSWER_END>" in content:
-                    print("INFO: Agent has produced a final answer. Exiting loop.")
 
-                    # 截取 <FINAL_ANSWER_START> 和 <FINAL_ANSWER_END> 之间的部分
-                    match = re.search(r"<FINAL_ANSWER_START>(.*)<FINAL_ANSWER_END>", content, re.S)
-                    if match:
-                        final_answer = match.group(1).strip()
-                    else:
-                        final_answer = content  # fallback
-                    break
 
-        final_answer_raw = final_answer
+                elif event_type == "RunCompleted":
 
-        natural_language_summary = final_answer_raw
-        visualization_type = None
-        title = None
-        table_data = None
-        chart_data = None
+                    final_content = chunk.content
 
-        # 尝试从原始答案中用正则表达式提取 <json_report> 标签中的内容
-        # re.DOTALL 标志确保了 . 可以匹配包括换行符在内的任意字符
-        match = re.search(r'<json_report>(.*?)</json_report>', final_answer_raw, re.DOTALL)
-        if match:
-            json_string = match.group(1).strip()
-            if json_string.startswith("```json"):
-                json_string = json_string[7:]  # 移除开头的 '```json'
-            if json_string.endswith("```"):
-                json_string = json_string[:-3]  # 移除结尾的 '```'
-            # 将自然语言部分和JSON标签部分分离开
-            natural_language_summary = re.sub(r'<json_report>.*?</json_report>', '', final_answer_raw,
-                                              flags=re.DOTALL).strip()
-            try:
-                # 先将整个JSON字符串解析为一个父对象
-                report_json = json.loads(json_string)
-                print("DEBUG: 成功从AI回复中解析出 JSON Report 对象。")
+                    final_answer_block_match = re.search(r'<FINAL_ANSWER_START>(.*)<FINAL_ANSWER_END>', final_content,re.S)
 
-                # 然后从这个父对象中，安全地获取每一个字段
-                visualization_type = report_json.get("visualization_type")
-                title = report_json.get("title")
-                table_data = report_json.get("table_data")
-                chart_data = report_json.get("chart_data")
+                    if final_answer_block_match:
+                        final_answer_block = final_answer_block_match.group(1).strip()
 
-            except json.JSONDecodeError:
-                print(f"ERROR: AI生成的JSON格式错误，无法解析: {json_string}")
-                natural_language_summary = "AI在生成报告时遇到格式问题，无法展示数据。"
+                        report_match = re.search(r'<json_report>(.*?)</json_report>', final_answer_block, re.S)
 
-        # 我们将使用处理过的 natural_language_summary 作为最终的 final_answer
-        final_answer = natural_language_summary
+                        natural_language_summary = final_answer_block
 
-        # --- Part 2: 解析用于前端展示的步骤 ---
-        execution_steps = []
-        if full_trace_of_this_turn:
-            last_tool_name = None
-            for message in full_trace_of_this_turn:
-                if message.role == "assistant" and message.tool_calls:
-                    if message.content:
-                        execution_steps.append({"type": "thought", "content": message.content})
-                    for tool_call in message.tool_calls:
-                        tool_name = tool_call.get("function", {}).get("name")
-                        last_tool_name = tool_name
-                        execution_steps.append({
-                            "type": "tool_call", "tool_name": tool_name,
-                            "tool_args": tool_call.get("function", {}).get("arguments")
-                        })
-                elif message.role == "tool":
-                    output_content = str(message.content)
-                    preview = (output_content[:500] + '...') if len(output_content) > 500 else output_content
-                    execution_steps.append({
-                        "type": "tool_output", "tool_name": last_tool_name or "未知工具",
-                        "output_preview": preview, "output_full": output_content
-                    })
+                        if report_match:
 
-        # --- Part 3: 清理存入记忆的数据 ---
-        if self.memory.runs:
-            last_run = self.memory.runs[-1]
-            if last_run.response and last_run.response.messages:
-                messages_for_cleanup = last_run.response.messages
-                for i, message in enumerate(messages_for_cleanup):
-                    if message.role == "tool" and len(str(message.content)) > 1000:
-                        summary = f"[{message.name or '工具'} 返回了大量数据，内容已总结]"
-                        if i + 1 < len(messages_for_cleanup) and messages_for_cleanup[i + 1].role == 'assistant':
-                            assistant_summary = messages_for_cleanup[i + 1].content
-                            if assistant_summary:
-                                summary = f"[原始工具输出过长，已被总结替代]:\n{assistant_summary}"
-                        print(f"DEBUG: Cleaning up large tool output for '{message.name}' in memory.")
-                        message.content = summary
+                            json_string = report_match.group(1).strip()
+                            try:
+                                report_json = json.loads(json_string)
+                                yield json.dumps({
+                                    "type": "visualization_data",
+                                    "data": {
+                                        "visualization_type": report_json.get("visualization_type"),
+                                        "title": report_json.get("title"),
+                                        "table_data": report_json.get("table_data"),
+                                        "chart_data": report_json.get("chart_data"),
+                                    }
 
-        # --- Part 4: 返回结果 ---
-        return {
-            "final_answer": final_answer.replace('**', ''),
-            "execution_steps": execution_steps,
-            "visualization_type": visualization_type,
-            "title": title,
-            "table_data": table_data,
-            "chart_data": chart_data,
-        }
+                                }) + "\n"
+                                natural_language_summary = re.sub(r'<json_report>.*?</json_report>', '',final_answer_block, flags=re.S).strip()
+
+                            except json.JSONDecodeError as json_err:
+                                logging.error(f"JSON report 解析失败: {json_err}")
+                        if natural_language_summary:
+                            yield json.dumps({
+                                "type": "final_answer",
+                                "data": {"content": natural_language_summary.replace('**', '')}
+                            }) + "\n"
+                    yield json.dumps({"type": "stream_end"}) + "\n"
+
+        except Exception as e:
+            print(f"ERROR in get_response_stream: {e}")
+            error_event = {
+                "type": "error",
+                "data": {"message": f"Agent 执行过程中发生内部错误: {str(e)}"}
+            }
+            yield json.dumps(error_event) + "\n"
+
+
+        finally:
+            # --- Part 3: 清理存入记忆的数据 ---
+            if self.memory.runs:
+                last_run = self.memory.runs[-1]
+                if last_run.response and last_run.response.messages:
+                    messages_for_cleanup = last_run.response.messages
+                    for i, message in enumerate(messages_for_cleanup):
+                        if message.role == "tool" and len(str(message.content)) > 1000:
+                            summary = f"[{message.name or '工具'} 返回了大量数据，内容已总结]"
+                            if i + 1 < len(messages_for_cleanup) and messages_for_cleanup[i + 1].role == 'assistant':
+                                assistant_summary = messages_for_cleanup[i + 1].content
+                                if assistant_summary:
+                                    summary = f"[原始工具输出过长，已被总结替代]:\n{assistant_summary}"
+                            print(f"DEBUG: Cleaning up large tool output for '{message.name}' in memory.")
+                            message.content = summary
