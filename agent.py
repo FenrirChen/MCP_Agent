@@ -77,33 +77,56 @@ class FinancialAgent:
             "- **情况二：默认行为（生成表格）**\n"
             "  - **条件**: 在**所有其他情况**下，即使用户只是查询信息（例如“查一下上个月的支出”），没有明确说要“表格”。\n"
             "  - **行动**: `visualization_type` 【必须】设置为 `'table'`，并且你【必须】生成 `table_data` 对象，此时 `chart_data` 必须为 `null`。**这是最核心的默认行为，任何不含图表关键词的查询都应执行此操作。**\n\n"
+            """
+            ### 3. 探针插入 (重要！)
+            你的核心任务不仅是查询数据，更是作为一名智能的“数据向导”，为用户提供可供进一步探索的路径。
+            -  **主动思考下一步**：对于你返回的图表或表格中的每一个关键数据点（例如项目名称、合同编号等），你都必须思考：“用户看到这个数据后，最可能想了解什么？” 然后，为这个最合理、最有价值的下一步操作，生成一个“探针”。
+            -  **探针的固定格式**：
+                探针是一个JSON对象，用于触发后端服务调用。它的格式【必须】如下：`{{ "service_name": "要调用的服务名", "params": {{ "参数名": "参数值" }} }}`
+            -  **【重要】如何选择服务**：在生成探针时，你【必须】在你已经获取的完整的API列表中，根据API的描述和参数，**自主选择**最合适的一个`service_name`来使用。例如，当需要为某个项目生成查询其发票列表的探针时，你应该在API列表中寻找描述为“查询项目发票”或类似的API，并使用它的名称。
+            """
             "### 3. 数据格式定义\n"
             "#### 表格 `table_data` 格式:\n"
-            "json\n"
-            "{{\n"
-            "  \"tables\": [\n"
-            "    {{\n"
-            "      \"title\": \"子表格标题\",\n"
-            "      \"headers\": [\"列1\", \"列2\"],\n"
-            "      \"rows\": [\n"
-            "        [\"数据1\", \"数据2\"]\n"
-            "      ]\n"
-            "    }}\n"
-            "  ]\n"
-            "}}\n"
-            "##JSON格式结束\n\n"
+            """
+            json
+            {{
+                "tables": [
+                {{
+                    "title": "子表格标题",
+                    "headers": ["列1", "列2", "列3"],
+                    "rows": [
+                        [
+                            {{ "value": "项目A", "probe": {{ "service_name": "RecordProjectService", "params": {{ "projectId": "PROJ-A" }} }} }},
+                            {{ "value": 120.5, "probe": null }},
+                            {{ "value": "CON-2024-001", "probe": {{ "service_name": "GetContractDetailsService", "params": {{ "contractId": "CON-2024-001" }} }} }}
+                        ]
+                    ]
+                }}
+            ]
+            }}
+            ##JSON格式结束
+            """
             "#### 图表 `chart_data` 格式:\n"
-            "json\n"
-            "{{\n"
-            "  \"labels\": [\"项目A\", \"项目B\", \"项目C\"],\n"
-            "  \"datasets\": [\n"
-            "    {{\n"
-            "      \"label\": \"毛利率\",\n"
-            "      \"data\": [0.25, 0.35, 0.45],\n"
-            "      \"backgroundColor\": [\"#41B883\", \"#E46651\", \"#00D8FF\", \"#FFC107\", \"#9C27B0\"]\n"
-            "    }}\n"
-            "  ]\n"
-            "}}\n"
+            """
+            json
+            {{
+                "labels": ["项目A", "项目B", "项目C"],
+                "datasets": [
+                {{
+                    "label": "毛利率",
+                    "data": [0.25, 0.35, 0.45],
+                    "backgroundColor": ["#41B883", "#E46651", "#00D8FF", "#FFC107", "#9C27B0"],
+                    "probes": [
+                        {{ "service_name": "FinishPayPaymentService", "params": {{ "projectId": "PROJ-A" }} }},
+                        {{ "service_name": "FinishPayPaymentService", "params": {{ "projectId": "PROJ-B" }} }},
+                        {{ "service_name": "FinishPayPaymentService", "params": {{ "projectId": "PROJ-C" }} }}
+                    ]
+                    }}
+                ]
+            }}
+            ##JSON格式结束
+            """
+
             "##JSON格式结束\n\n"
             "### 4. 指标计算规则\n"
             "如果遇到需要计算的指标（例如：毛利率），你必须在【思考】环节中明确写出计算公式和步骤。例如：**毛利率 = (收入 - 成本) / 收入**。然后调用工具获取计算所需的基础数据。\n"
@@ -225,14 +248,7 @@ class FinancialAgent:
             }}
 
             * **返回字段**:
-            在 `body.salesInvoiceLedgerList` 数组中，每个发票对象包含以下字段：
-            * `invoiceId`: (字符串) 销售发票的唯一ID。
-            * `invoiceDate`: (字符串) 开票日期 (格式: YYYY-MM-DD)。
-            * `amount`: (浮点数) 发票金额（不含税）。
-            * `taxRate`: (浮点数) 税率（例如 0.06 代表 6%）。
-            * `totalAmount`: (浮点数) 含税总金额。
-            * `customerName`: (字符串) 开票客户的名称。
-            * `status`: (字符串) 发票状态，如 "已开票"。
+            在 `body.salesInvoiceLedgerList` 数组中，包含每个发票的`invoiceId`: (字符串) 销售发票的唯一ID。
 
             #### 4. 服务名称: `FinishPayPaymentService`
             * **服务描述**:
