@@ -9,8 +9,6 @@ services:
       context: .
       # 指定 Dockerfile 在 docker/ 文件夹内
       dockerfile: ./docker/backend.Dockerfile
-    ports:
-      - "8000:8000"
     env_file:
       - ./.env
     container_name: financial_agent_backend
