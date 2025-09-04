@@ -90,133 +90,227 @@ class ChatRequest(BaseModel):
 
 class ProbeRequest(BaseModel):
     service_name: str
-    params: Dict[str, Any]
+    isQuery: bool = False  # 新增 isQuery 字段，默认值为 False
+    body: Optional[Dict[str, Any]] = None # 将原来的 params 改名为 body
 
 
-def call_backend_api(service_name: str, params: Dict[str, Any]) -> Any:
+def call_backend_api(service_name: str, params: Optional[Dict[str, Any]] = None, isQuery: bool = False) -> Any:
     """
-    模拟函数，从加载的 MOCK_DATA 中查找匹配的响应。
+    一个更智能的模拟函数，它会从加载的 MOCK_DATA 中查找匹配的响应。
+    修正了 isQuery 的匹配逻辑和函数签名。
     """
-    logger.info(f"正在模拟调用后端服务: {service_name}，参数: {params}")
+    # 确保 params 在日志和后续逻辑中即使是 None 也能安全处理
+    params = params or {}
+    logger.info(f"正在模拟调用后端服务: {service_name}，参数: {params}，isQuery: {isQuery}")
 
     if not MOCK_DATA or service_name not in MOCK_DATA:
         logger.warning(f"⚠️ 在 mock_data.json 中未找到服务 {service_name} 的定义。")
         return None
 
-    # 遍历该服务的所有mock场景
     for scenario in MOCK_DATA[service_name]:
         match_params = scenario.get("match_params", {})
 
-        # 简单匹配逻辑：检查请求的params是否是match_params中body的超集
-        # 注意：isQuery等其他匹配逻辑可以按需在此扩展
-        if "body" in match_params:
-            if all(item in params.items() for item in match_params["body"].items()):
-                logger.info(f"✅ 找到匹配的mock场景，返回响应。")
-                return scenario.get("response")  # 返回完整的response对象
-        # 增加一个处理无body参数的通用匹配（例如查询所有）
-        elif not match_params.get("body") and not params:
-            logger.info(f"✅ 找到匹配的mock场景（无参数），返回响应。")
+        # 【关键修正】使用 'isQuery' (驼峰) 来匹配 JSON 文件中的键
+        if match_params.get("isQuery") != isQuery:
+            continue
+
+        # 匹配 body 参数
+        mock_body_params = match_params.get("body", {})
+        if all(item in params.items() for item in mock_body_params.items()):
+            logger.info(f"✅ 找到匹配的mock场景，返回响应。")
             return scenario.get("response")
 
-    logger.warning(f"⚠️ 未找到与参数 {params} 匹配的mock场景。")
+    logger.warning(f"⚠️ 未找到与参数 {params} 和 isQuery={isQuery} 匹配的mock场景。")
     return None
 
 
 def enrich_data_with_probes(data: Any, service_name: str) -> Any:
+    """
+    根据导航图，为数据注入下一级的探针。
+    最终修正版，确保对列表中的每个项目都能正确应用规则。
+    """
     if not all([DRILLDOWN_ENRICHMENT_MAP, RESOURCE_API_MAP]):
-        logger.warning("无法加工数据：配置文件未加载。")
         return data
 
     service_info = RESOURCE_API_MAP.get(service_name, {})
     resource_type = service_info.get("returns_resource_type")
 
-    logger.info(f"服务 '{service_name}' 返回的资源类型被识别为: '{resource_type}'")
-
     if not resource_type:
-        logger.info("资源类型为空，跳过加工。")
         return data
 
     rules = DRILLDOWN_ENRICHMENT_MAP.get(resource_type, {}).get("fields")
     if not rules:
-        logger.info(f"资源类型 '{resource_type}' 没有定义加工规则，跳过加工。")
         return data
-
-    logger.info(f"找到适用于 '{resource_type}' 的加工规则: {rules}")
 
     def process_item(item: Dict[str, Any]) -> Dict[str, Any]:
         enriched_item = item.copy()
-        logger.debug(f"  正在处理项目: {item}")
-        for field, rule in rules.items():
+
+        # 【关键修正】: 之前这里的逻辑有缺陷，现在我们对每条规则都进行独立判断
+
+        # 规则1: 处理 __self__ 规则 (如果存在)
+        if "__self__" in rules:
+            rule = rules["__self__"]
             target_service = rule.get("target_service")
             source_id_field = rule.get("source_id_field")
-            if not target_service or not source_id_field: continue
+            if target_service and source_id_field and source_id_field in item:
+                target_param_name = RESOURCE_API_MAP.get(target_service, {}).get("primary_id_param_name")
+                if target_param_name:
+                    id_value = item[source_id_field]
+                    probe = {
+                        "probe_type": "API_CALL",
+                        "service_name": target_service,
+                        "params": {target_param_name: id_value}
+                    }
+                    enriched_item["drilldown_probe"] = probe
 
-            target_param_name = RESOURCE_API_MAP.get(target_service, {}).get("primary_id_param_name")
-            if not target_param_name: continue
-
-            id_value = None
+        # 规则2: 遍历处理所有其他字段规则
+        for field, rule in rules.items():
             if field == "__self__":
-                id_value = item.get(source_id_field)
-            elif field in item:
+                continue  # __self__ 已经处理过了，跳过
+
+            if field in item:
+                target_service = rule.get("target_service")
+                source_id_field = rule.get("source_id_field")
+                if not target_service or not source_id_field: continue
+
+                target_param_name = RESOURCE_API_MAP.get(target_service, {}).get("primary_id_param_name")
+                if not target_param_name: continue
+
                 id_value = item[field] if source_id_field == "__self__" else item.get(source_id_field)
 
-            if id_value is not None:
-                probe = {
-                    "probe_type": "API_CALL",
-                    "service_name": target_service,
-                    "params": {target_param_name: id_value}
-                }
-                probe_field_name = "drilldown_probe" if field == "__self__" else f"{field}_probe"
-                enriched_item[probe_field_name] = probe
-                logger.debug(f"    - 成功为字段 '{field}' 生成探针: {probe}")
+                if id_value is not None:
+                    probe = {
+                        "probe_type": "API_CALL",
+                        "service_name": target_service,
+                        "params": {target_param_name: id_value}
+                    }
+                    enriched_item[f"{field}_probe"] = probe
+
         return enriched_item
 
-    # 逻辑修正: 直接对原始数据进行深拷贝操作，避免引用问题
+    # 下面的逻辑保持不变
     response_copy = json.loads(json.dumps(data))
     core_data = response_copy.get("body", {})
-
     list_key_found = next((key for key, value in core_data.items() if isinstance(value, list)), None)
 
     if list_key_found:
-        logger.info(f"数据类型被识别为列表 (在字段 '{list_key_found}' 中)。开始逐项加工...")
         original_list = core_data.get(list_key_found, [])
         processed_list = [process_item(item) for item in original_list]
         response_copy["body"][list_key_found] = processed_list
         return response_copy
     elif isinstance(core_data, dict) and core_data:
-        logger.info("数据类型被识别为单个对象。开始加工...")
         processed_body = process_item(core_data)
         response_copy["body"] = processed_body
         return response_copy
     else:
-        logger.info("未在body中找到可加工的列表或对象。")
         return response_copy
 
+
+def format_as_report(data: Dict[str, Any], service_name: str) -> Dict[str, Any]:
+    """
+    一个更智能的函数，用于将任何输入数据包装成前端期望的标准报告格式。
+    - 自动过滤 total, totalPages 等元数据。
+    - 自动将 _probe 字段隐藏，不作为列展示。
+    - 自动将列表数据渲染为子表格。
+    """
+    if "visualization_type" in data and data.get("visualization_type") != None:
+        logger.info("数据已是标准报告格式，直接返回。")
+        return data
+
+    logger.info("数据为原始API格式，正在包装为标准报告...")
+
+    body = data.get("body", {})
+    if not isinstance(body, dict):
+        body = {"content": body}
+
+    report_tables = []
+
+    # 1. 将 body 的键分为“简单属性”和“列表属性”
+    simple_properties = {}
+    list_properties = {}
+
+    for key, value in body.items():
+        if isinstance(value, list) and value and isinstance(value[0], dict):
+            list_properties[key] = value
+        elif "_probe" not in key:  # 忽略所有探针字段
+            simple_properties[key] = value
+
+    # 2. 创建主信息表格（只包含简单属性）
+    main_info_rows = []
+    # 定义不应展示在主信息表中的元数据字段
+    METADATA_KEYS = ['total', 'totalPages']
+
+    for key, value in simple_properties.items():
+        if key not in METADATA_KEYS:
+            probe = body.get(f"{key}_probe")
+            main_info_rows.append([
+                {"value": key, "probe": None},
+                {"value": value, "probe": probe}
+            ])
+
+    if main_info_rows:
+        report_tables.append({
+            "title": "详细信息",
+            "headers": ["属性", "值"],
+            "rows": main_info_rows
+        })
+
+    # 3. 为每个列表属性创建子表格
+    for list_key, item_list in list_properties.items():
+        # 从列表的第一项获取所有可能的列名，并过滤掉探针列
+        headers = [key for key in item_list[0].keys() if "_probe" not in key]
+
+        sub_table_rows = []
+        for item in item_list:
+            row_data = []
+            for header in headers:
+                probe_for_cell = item.get(f"{header}_probe")
+                row_data.append({
+                    "value": item.get(header, ""),
+                    "probe": probe_for_cell
+                })
+            sub_table_rows.append(row_data)
+
+        report_tables.append({
+            "title": list_key,  # 使用列表的键名作为子表格标题
+            "headers": headers,
+            "rows": sub_table_rows
+        })
+
+    # 4. 构建最终报告
+    report = {
+        "visualization_type": "table",
+        "title": f"'{service_name}' 查询结果",
+        "table_data": {"tables": report_tables},
+        "chart_data": None
+    }
+    return report
 
 # --- API 端点定义 ---
 
 
 @app.post("/api/execute_probe")
-async def execute_probe(probe: ProbeRequest):
-    """
-    执行探针并返回加工后数据的端点
-    """
+async def execute_probe(probe: ProbeRequest):  # 注意这里依然是 ProbeRequest
     if not all([RESOURCE_API_MAP, DRILLDOWN_ENRICHMENT_MAP, MOCK_DATA]):
         raise HTTPException(status_code=503, detail="服务暂时不可用：配置文件或模拟数据初始化失败。")
 
-    logger.info(f"接收到探针，准备执行: {probe.service_name} with params {probe.params}")
+    logger.info(f"接收到探针，准备执行: {probe.service_name}，isQuery: {probe.isQuery}，参数: {probe.body}")
 
-    # 1. 执行探针，调用后端API获取原始数据
-    raw_response = call_backend_api(probe.service_name, probe.params)
+    # 1. 执行探针，获取原始数据 (传递 probe.body)
+    # 根据 isQuery 参数，可以在这里添加额外的逻辑，例如选择不同的mock数据查找策略
+    raw_response = call_backend_api(probe.service_name, probe.body, isQuery=probe.isQuery)  # 传递 isQuery
 
     if raw_response is None:
         raise HTTPException(status_code=404, detail=f"未能从后端服务 {probe.service_name} 获取到数据。")
 
-    # 2. 对原始数据进行二次加工，注入下一级的探针
+    # 2. 对原始数据进行二次加工，注入探针
     enriched_response = enrich_data_with_probes(raw_response, probe.service_name)
 
-    logger.info("✅ 数据加工完成，返回给前端。")
-    return JSONResponse(content=enriched_response)
+    # 3. 将加工后的数据，统一包装成前端报告格式
+    final_report = format_as_report(enriched_response, probe.service_name)
+
+    logger.info("✅ 数据包装和加工完成，返回给前端。")
+    return JSONResponse(content=final_report)
 
 
 

@@ -312,7 +312,19 @@
           "totalPages": 1
         }
       }
-    }
+    },
+    { "match_params": {"isQuery": true, "body": {"projectId": "PJ2023-001"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"salesInvoiceLedgerList": [{"invoiceId": "INV-001"}, {"invoiceId": "INV-002"}], "total": 2, "totalPages": 1}}},
+    { "match_params": {"isQuery": true, "body": {"projectId": "PJ2023-002"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"salesInvoiceLedgerList": [{"invoiceId": "INV-003"}, {"invoiceId": "INV-004"}, {"invoiceId": "INV-005"}], "total": 3, "totalPages": 1}}},
+    { "match_params": {"isQuery": true, "body": {"projectId": "PJ2023-003"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"salesInvoiceLedgerList": [{"invoiceId": "INV-006"}, {"invoiceId": "INV-007"}], "total": 2, "totalPages": 1}}},
+    { "match_params": {"isQuery": true, "body": {"projectId": "PJ2024-004"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"salesInvoiceLedgerList": [{"invoiceId": "INV-008"}, {"invoiceId": "INV-009"}], "total": 2, "totalPages": 1}}},
+    { "match_params": {"isQuery": true, "body": {"projectId": "PJ2024-005"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"salesInvoiceLedgerList": [{"invoiceId": "INV-010"}, {"invoiceId": "INV-011"}, {"invoiceId": "INV-012"}], "total": 3, "totalPages": 1}}},
+    { "match_params": {"isQuery": true, "body": {"projectId": "PJ2024-006"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"salesInvoiceLedgerList": [{"invoiceId": "INV-013"}, {"invoiceId": "INV-014"}], "total": 2, "totalPages": 1}}},
+    { "match_params": {"isQuery": true, "body": {"projectId": "PJ2022-015"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"salesInvoiceLedgerList": [{"invoiceId": "INV-015"}, {"invoiceId": "INV-016"}], "total": 2, "totalPages": 1}}},
+    { "match_params": {"isQuery": true, "body": {"projectId": "PJ2023-008"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"salesInvoiceLedgerList": [{"invoiceId": "INV-017"}, {"invoiceId": "INV-018"}, {"invoiceId": "INV-019"}], "total": 3, "totalPages": 1}}},
+    { "match_params": {"isQuery": true, "body": {"projectId": "PJ2023-009"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"salesInvoiceLedgerList": [{"invoiceId": "INV-020"}], "total": 1, "totalPages": 1}}},
+    { "match_params": {"isQuery": true, "body": {"projectId": "PJ2024-010"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"salesInvoiceLedgerList": [{"invoiceId": "INV-021"}, {"invoiceId": "INV-022"}], "total": 2, "totalPages": 1}}},
+    { "match_params": {"isQuery": true, "body": {"projectId": "PJ2022-018"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"salesInvoiceLedgerList": [{"invoiceId": "INV-023"}], "total": 1, "totalPages": 1}}},
+    { "match_params": {"isQuery": true, "body": {"projectId": "PJ2024-011"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"salesInvoiceLedgerList": [{"invoiceId": "INV-024"}, {"invoiceId": "INV-025"}, {"invoiceId": "INV-026"}], "total": 3, "totalPages": 1}}}
   ],
   "FinishCommunicationReimbDetailService": [
     {
@@ -341,5 +353,33 @@
         }
       }
     }
+  ],
+  "PendingSalesInvoiceQuoteService": [
+    {"match_params": {"isQuery": true, "body": {"invoiceId": "INV-001"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"invoiceId": "INV-001", "projectId": "PJ2023-001", "invoiceDate": "2023-09-15", "invoiceAmount": 350000.00, "payerName": "某某财务咨询有限公司", "payeeName": "我方公司"}}},
+    {"match_params": {"isQuery": true, "body": {"invoiceId": "INV-002"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"invoiceId": "INV-002", "projectId": "PJ2023-001", "invoiceDate": "2023-11-20", "invoiceAmount": 150000.00, "payerName": "某某财务咨询有限公司", "payeeName": "我方公司"}}},
+    {"match_params": {"isQuery": true, "body": {"invoiceId": "INV-003"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"invoiceId": "INV-003", "projectId": "PJ2023-002", "invoiceDate": "2023-05-10", "invoiceAmount": 88000.00, "payerName": "甲广告传媒公司", "payeeName": "我方公司"}}},
+    {"match_params": {"isQuery": true, "body": {"invoiceId": "INV-004"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"invoiceId": "INV-004", "projectId": "PJ2023-002", "invoiceDate": "2023-06-25", "invoiceAmount": 125000.00, "payerName": "乙会展服务公司", "payeeName": "我方公司"}}},
+    {"match_params": {"isQuery": true, "body": {"invoiceId": "INV-005"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"invoiceId": "INV-005", "projectId": "PJ2023-002", "invoiceDate": "2023-08-01", "invoiceAmount": 95000.00, "payerName": "甲广告传媒公司", "payeeName": "我方公司"}}},
+    {"match_params": {"isQuery": true, "body": {"invoiceId": "INV-006"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"invoiceId": "INV-006", "projectId": "PJ2023-003", "invoiceDate": "2023-12-05", "invoiceAmount": 450000.00, "payerName": "某家人力资源软件公司", "payeeName": "我方公司"}}},
+    {"match_params": {"isQuery": true, "body": {"invoiceId": "INV-007"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"invoiceId": "INV-007", "projectId": "PJ2023-003", "invoiceDate": "2024-03-18", "invoiceAmount": 200000.00, "payerName": "某家人力资源软件公司", "payeeName": "我方公司"}}},
+    {"match_params": {"isQuery": true, "body": {"invoiceId": "INV-008"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"invoiceId": "INV-008", "projectId": "PJ2024-004", "invoiceDate": "2024-02-28", "invoiceAmount": 76000.00, "payerName": "华南网络工程服务商", "payeeName": "我方公司"}}},
+    {"match_params": {"isQuery": true, "body": {"invoiceId": "INV-009"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"invoiceId": "INV-009", "projectId": "PJ2024-004", "invoiceDate": "2024-04-10", "invoiceAmount": 55000.00, "payerName": "华南网络工程服务商", "payeeName": "我方公司"}}},
+    {"match_params": {"isQuery": true, "body": {"invoiceId": "INV-010"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"invoiceId": "INV-010", "projectId": "PJ2024-005", "invoiceDate": "2024-05-20", "invoiceAmount": 1200000.00, "payerName": "某某材料科技有限公司", "payeeName": "我方公司"}}},
+    {"match_params": {"isQuery": true, "body": {"invoiceId": "INV-011"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"invoiceId": "INV-011", "projectId": "PJ2024-005", "invoiceDate": "2024-07-30", "invoiceAmount": 2500000.00, "payerName": "某某精密仪器供应商", "payeeName": "我方公司"}}},
+    {"match_params": {"isQuery": true, "body": {"invoiceId": "INV-012"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"invoiceId": "INV-012", "projectId": "PJ2024-005", "invoiceDate": "2024-08-15", "invoiceAmount": 850000.00, "payerName": "某某材料科技有限公司", "payeeName": "我方公司"}}},
+    {"match_params": {"isQuery": true, "body": {"invoiceId": "INV-013"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"invoiceId": "INV-013", "projectId": "PJ2024-006", "invoiceDate": "2024-06-01", "invoiceAmount": 980000.00, "payerName": "某云服务提供商", "payeeName": "我方公司"}}},
+    {"match_params": {"isQuery": true, "body": {"invoiceId": "INV-014"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"invoiceId": "INV-014", "projectId": "PJ2024-006", "invoiceDate": "2024-09-01", "invoiceAmount": 500000.00, "payerName": "某数据技术公司", "payeeName": "我方公司"}}},
+    {"match_params": {"isQuery": true, "body": {"invoiceId": "INV-015"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"invoiceId": "INV-015", "projectId": "PJ2022-015", "invoiceDate": "2023-01-10", "invoiceAmount": 620000.00, "payerName": "某某物流科技有限公司", "payeeName": "我方公司"}}},
+    {"match_params": {"isQuery": true, "body": {"invoiceId": "INV-016"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"invoiceId": "INV-016", "projectId": "PJ2022-015", "invoiceDate": "2023-04-22", "invoiceAmount": 340000.00, "payerName": "某某物流科技有限公司", "payeeName": "我方公司"}}},
+    {"match_params": {"isQuery": true, "body": {"invoiceId": "INV-017"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"invoiceId": "INV-017", "projectId": "PJ2023-008", "invoiceDate": "2023-07-19", "invoiceAmount": 730000.00, "payerName": "某CRM软件供应商", "payeeName": "我方公司"}}},
+    {"match_params": {"isQuery": true, "body": {"invoiceId": "INV-018"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"invoiceId": "INV-018", "projectId": "PJ2023-008", "invoiceDate": "2023-10-30", "invoiceAmount": 220000.00, "payerName": "某系统实施顾问公司", "payeeName": "我方公司"}}},
+    {"match_params": {"isQuery": true, "body": {"invoiceId": "INV-019"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"invoiceId": "INV-019", "projectId": "PJ2023-008", "invoiceDate": "2024-01-25", "invoiceAmount": 150000.00, "payerName": "某CRM软件供应商", "payeeName": "我方公司"}}},
+    {"match_params": {"isQuery": true, "body": {"invoiceId": "INV-020"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"invoiceId": "INV-020", "projectId": "PJ2023-009", "invoiceDate": "2023-11-05", "invoiceAmount": 120000.00, "payerName": "某某招聘服务网站", "payeeName": "我方公司"}}},
+    {"match_params": {"isQuery": true, "body": {"invoiceId": "INV-021"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"invoiceId": "INV-021", "projectId": "PJ2024-010", "invoiceDate": "2024-07-01", "invoiceAmount": 300000.00, "payerName": "某AI技术服务商", "payeeName": "我方公司"}}},
+    {"match_params": {"isQuery": true, "body": {"invoiceId": "INV-022"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"invoiceId": "INV-022", "projectId": "PJ2024-010", "invoiceDate": "2024-08-20", "invoiceAmount": 180000.00, "payerName": "某云算力平台", "payeeName": "我方公司"}}},
+    {"match_params": {"isQuery": true, "body": {"invoiceId": "INV-023"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"invoiceId": "INV-023", "projectId": "PJ2022-018", "invoiceDate": "2023-02-15", "invoiceAmount": 250000.00, "payerName": "某某信息安全认证中心", "payeeName": "我方公司"}}},
+    {"match_params": {"isQuery": true, "body": {"invoiceId": "INV-024"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"invoiceId": "INV-024", "projectId": "PJ2024-011", "invoiceDate": "2024-05-18", "invoiceAmount": 5500000.00, "payerName": "华东某某建设集团", "payeeName": "我方公司"}}},
+    {"match_params": {"isQuery": true, "body": {"invoiceId": "INV-025"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"invoiceId": "INV-025", "projectId": "PJ2024-011", "invoiceDate": "2024-07-22", "invoiceAmount": 3200000.00, "payerName": "某某设备制造有限公司", "payeeName": "我方公司"}}},
+    {"match_params": {"isQuery": true, "body": {"invoiceId": "INV-026"}}, "response": {"rspCode": "000000", "rspMsg": "查询成功", "body": {"invoiceId": "INV-026", "projectId": "PJ2024-011", "invoiceDate": "2024-08-30", "invoiceAmount": 1800000.00, "payerName": "华东某某建设集团", "payeeName": "我方公司"}}}
   ]
 }

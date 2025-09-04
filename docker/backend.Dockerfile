@@ -19,6 +19,7 @@ COPY ../api_def.json .
 COPY ../schemas.py .
 COPY ../mcp_service.py .
 COPY ../tools ./tools/
+COPY ../config ./config/
 
 # 6. 暴露服务运行的端口
 EXPOSE 8000

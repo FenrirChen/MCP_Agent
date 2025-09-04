@@ -1,14 +1,22 @@
 {
-  "project": {
-    "api_name": "RecordProjectService",
-    "id_param_name": "projectId",
-    "id_field_in_response": "projectId",
-    "response_data_path": "body.projectList"
+  "RecordProjectService": {
+    "primary_id_param_name": "projectId",
+    "returns_resource_type": "project"
   },
-  "invoice": {
-    "api_name": "PendingSalesInvoiceQuoteService",
-    "id_param_name": "invoiceId",
-    "id_field_in_response": "invoiceId",
-    "response_data_path": "body"
+  "FinishPayPaymentService": {
+    "primary_id_param_name": "projectId",
+    "returns_resource_type": "invoice"
+  },
+  "PendingSalesInvoiceQuoteService": {
+    "primary_id_param_name": "invoiceId",
+    "returns_resource_type": "invoice"
+  },
+  "FinishRevenueService": {
+    "primary_id_param_name": "projectId",
+    "returns_resource_type": "invoice"
+  },
+  "QueryBookService": {
+    "primary_id_param_name": "projectId",
+    "returns_resource_type": "project"
   }
 }

@@ -1,0 +1,26 @@
+{
+  "project": {
+    "fields": {
+      "projectId": {
+        "target_service": "RecordProjectService",
+        "source_id_field": "__self__"
+      },
+      "projectName": {
+        "target_service": "FinishPayPaymentService",
+        "source_id_field": "projectId"
+      }
+    }
+  },
+  "invoice": {
+    "fields": {
+      "invoiceId": {
+        "target_service": "PendingSalesInvoiceQuoteService",
+        "source_id_field": "__self__"
+      },
+      "projectId": {
+        "target_service": "RecordProjectService",
+        "source_id_field": "__self__"
+      }
+    }
+  }
+}
